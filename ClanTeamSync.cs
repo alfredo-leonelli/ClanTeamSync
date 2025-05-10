@@ -3,10 +3,12 @@
 using Newtonsoft.Json.Linq;
 using Oxide.Core.Plugins;
 using System.Collections.Generic;
+using Oxide.Core.Libraries.Covalence;
+
 
 namespace Oxide.Plugins
 {
-    [Info("Clan Team Sync", "AnotherPanda", "1.0.0")]
+    [Info("Clan Team Sync", "AnotherPanda", "1.0.1")]
     [Description("Syncs clan members with in-game teams automatically.")]
     class ClanTeamSync : CovalencePlugin
     {
@@ -151,6 +153,49 @@ namespace Oxide.Plugins
 
             GenerateClanTeam(clanTag);
         }
+
+        private void OnTeamLeave(RelationshipManager.PlayerTeam team, BasePlayer player)
+        {
+            if (player == null)
+                return;
+
+            timer.Once(0.1f, () =>
+            {
+                string clanTag = Clans?.Call<string>("GetClanOf", player.UserIDString);
+                if (string.IsNullOrEmpty(clanTag))
+                    return;
+
+                Clans?.Call("LeaveClan", player.IPlayer);
+            });
+        }
+
+        private void OnTeamAcceptInvite(RelationshipManager.PlayerTeam team, BasePlayer player)
+        {
+            if (player == null || team == null)
+                return;
+
+            BasePlayer leader = BasePlayer.FindByID(team.teamLeader);
+            if (leader == null)
+                return;
+
+            string clanTag = Clans?.Call<string>("GetClanOf", leader.UserIDString);
+            if (string.IsNullOrEmpty(clanTag))
+                return;
+
+            string targetClan = Clans?.Call<string>("GetClanOf", player.UserIDString);
+            if (!string.IsNullOrEmpty(targetClan))
+                return;
+
+            IPlayer leaderIPlayer = leader.IPlayer;
+            IPlayer targetIPlayer = player.IPlayer;
+
+            bool invited = Clans?.Call<bool>("InvitePlayer", leaderIPlayer, targetIPlayer) ?? false;
+            if (!invited)
+                return;
+
+            Clans?.Call("JoinClan", targetIPlayer, clanTag);
+        }
+
 
         #endregion Hooks
     }
