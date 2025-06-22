@@ -8,7 +8,7 @@ using Oxide.Core.Libraries.Covalence;
 
 namespace Oxide.Plugins
 {
-    [Info("Clan Team Sync", "AnotherPanda", "1.0.1")]
+    [Info("Clan Team Sync", "AnotherPanda", "1.0.0")]
     [Description("Syncs clan members with in-game teams automatically.")]
     class ClanTeamSync : CovalencePlugin
     {
@@ -195,7 +195,6 @@ namespace Oxide.Plugins
 
             Clans?.Call("JoinClan", targetIPlayer, clanTag);
         }
-
 
         #endregion Hooks
     }
